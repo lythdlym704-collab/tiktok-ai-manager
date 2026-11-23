@@ -6,9 +6,12 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.view.Gravity
 import android.widget.*
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -22,6 +25,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private lateinit var scenesText: TextView
     private lateinit var status: TextView
     private lateinit var dailyCount: TextView
+    private lateinit var durationText: TextView
 
     private val starts = listOf("في قرية هادئة قرب النهر", "في مدينة قديمة تزدحم بالأزقة", "في صباح شتوي هادئ", "على أطراف صحراء واسعة", "في حي صغير يعرف سكانه بعضهم بعضاً", "في جزيرة تحيط بها المياه الزرقاء", "في مدرسة تطل على حديقة خضراء", "في محطة قطار لا تنام")
     private val heroes = listOf("ليان", "سليم", "مريم", "آدم", "نور", "ياسر", "هند", "كريم")
@@ -63,7 +67,10 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         card.addView(titleText)
         storyText = EditText(this).apply { setTextColor(white); setHintTextColor(Color.LTGRAY); hint = "سيظهر نص القصة هنا..."; textSize = 18f; minLines = 9; gravity = Gravity.TOP or Gravity.RIGHT; setPadding(12, 12, 12, 12); setBackgroundColor(Color.rgb(13, 19, 39)) }
         card.addView(storyText)
+        durationText = label("المدة التقديرية: ستظهر بعد إنشاء القصة.", Color.LTGRAY, 12f)
+        card.addView(durationText)
         card.addView(button("استمع إلى القصة") { speakStory() })
+        card.addView(button("تصدير التعليق الصوتي WAV") { exportVoice() })
         card.addView(button("إيقاف الصوت") { tts?.stop(); status.text = "تم إيقاف الصوت." })
         card.addView(button("نسخ نص القصة") { copyStory() })
         card.addView(button("حفظ المسودة") { saveDraft() })
@@ -138,6 +145,9 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     private fun loadStory(title: String, story: String) {
         titleText.setText(title); storyText.setText(story)
+        val words = story.trim().split(Regex("\\\\s+")).filter { it.isNotBlank() }.size
+        val seconds = (words * 60.0 / 125.0).toInt().coerceAtLeast(1)
+        durationText.text = "عدد الكلمات: $words • المدة المتوقعة: نحو ${seconds / 60} دقيقة و${seconds % 60} ثانية"
         scenesText.text = story.split("\n\n").mapIndexed { index, part -> "المشهد " + (index + 1) + ": " + part.trim() }.joinToString("\n\n")
     }
 
@@ -148,6 +158,31 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         tts?.setSpeechRate(0.88f); tts?.setPitch(1.0f)
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "arabic-story")
         status.text = "يجري تشغيل الصوت العربي المثبّت على جهازك."
+    }
+
+
+    private fun exportVoice() {
+        val text = storyText.text.toString().trim()
+        if (text.isEmpty()) { status.text = "أنشئ قصة أولاً."; return }
+        if (!ttsReady) { status.text = "الصوت العربي غير جاهز. ثبّت صوتاً عربياً من إعدادات تحويل النص إلى كلام."; return }
+        val directory = getExternalFilesDir(Environment.DIRECTORY_MUSIC) ?: filesDir
+        if (!directory.exists()) directory.mkdirs()
+        val output = File(directory, "hikaya-${System.currentTimeMillis()}.wav")
+        val utteranceId = "voice-export-${System.currentTimeMillis()}"
+        tts?.setSpeechRate(0.88f)
+        tts?.setPitch(1.0f)
+        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(id: String?) {}
+            override fun onDone(id: String?) {
+                runOnUiThread { status.text = "تم حفظ التعليق الصوتي WAV داخل مجلد ملفات التطبيق: ${output.name}" }
+            }
+            override fun onError(id: String?) {
+                runOnUiThread { status.text = "تعذر تصدير الصوت. جرّب اختيار محرك أو صوت عربي آخر." }
+            }
+        })
+        val result = tts?.synthesizeToFile(text, Bundle(), output, utteranceId)
+        if (result == TextToSpeech.SUCCESS) status.text = "جارٍ إنشاء ملف التعليق الصوتي..."
+        else status.text = "محرك الصوت لا يدعم تصدير الملف على هذا الجهاز."
     }
 
     private fun copyStory() {
