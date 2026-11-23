@@ -1,0 +1,11 @@
+{
+  "name": "TikTok AI Manager",
+  "short_name": "TikTok AI",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d1020",
+  "theme_color": "#101322",
+  "description": "مساعد عربي لتجهيز قصص الفيديو"
+}
