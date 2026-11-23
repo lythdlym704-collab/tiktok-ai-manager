@@ -13,7 +13,8 @@ import android.media.MediaMuxer
 import android.os.Environment
 import android.text.Layout
 import android.text.StaticLayout
-import android.text.TextDirectionHeuristics\nimport android.text.TextPaint
+import android.text.TextDirectionHeuristics
+import android.text.TextPaint
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
