@@ -138,7 +138,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     private fun loadStory(title: String, story: String) {
         titleText.setText(title); storyText.setText(story)
-        scenesText.text = story.split("\\n\\n").mapIndexed { index, part -> "المشهد " + (index + 1) + ": " + part.trim() }.joinToString("\\n\\n")
+        scenesText.text = story.split("\n\n").mapIndexed { index, part -> "المشهد " + (index + 1) + ": " + part.trim() }.joinToString("\n\n")
     }
 
     private fun speakStory() {
@@ -151,7 +151,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     }
 
     private fun copyStory() {
-        val text = titleText.text.toString() + "\\n\\n" + storyText.text.toString()
+        val text = titleText.text.toString() + "\n\n" + storyText.text.toString()
         if (storyText.text.isNullOrBlank()) { status.text = "لا يوجد نص لنسخه."; return }
         val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("قصة عربية", text))
