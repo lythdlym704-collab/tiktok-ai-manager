@@ -58,6 +58,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         card.addView(label("إنشاء القصص", white, 21f, true))
         card.addView(label("المولد المحلي يركّب قصصاً جديدة من عناصر متعددة ويحفظ سجلّاً لتقليل التكرار. لا يحتاج اشتراكاً، لكنه ليس نموذجاً سحابياً.", Color.LTGRAY, 13f))
         card.addView(button("إنشاء قصتي اليوم") { generateDailyStories() })
+        card.addView(button("عرض القصة الثانية") { showSecondStory() })
         titleText = EditText(this).apply { setTextColor(white); setHintTextColor(Color.LTGRAY); hint = "عنوان القصة"; textSize = 18f; setSingleLine(true); gravity = Gravity.RIGHT; setPadding(12, 12, 12, 12); setBackgroundColor(Color.rgb(13, 19, 39)) }
         card.addView(titleText)
         storyText = EditText(this).apply { setTextColor(white); setHintTextColor(Color.LTGRAY); hint = "سيظهر نص القصة هنا..."; textSize = 18f; minLines = 9; gravity = Gravity.TOP or Gravity.RIGHT; setPadding(12, 12, 12, 12); setBackgroundColor(Color.rgb(13, 19, 39)) }
@@ -108,6 +109,15 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         updateDailyCount()
     }
 
+    private fun showSecondStory() {
+        val prefs = getSharedPreferences("story_manager", MODE_PRIVATE)
+        val story = prefs.getString("daily_story_2", null)
+        val title = prefs.getString("daily_title_2", null)
+        if (story.isNullOrBlank() || title.isNullOrBlank()) { status.text = "أنشئ قصتي اليوم أولاً."; return }
+        loadStory(title, story)
+        status.text = "هذه القصة الثانية لهذا اليوم."
+    }
+
     private fun makeUniqueStory(used: MutableSet<String>, day: String, slot: Int): Pair<String, String> {
         var attempt = 0
         while (attempt < 100) {
@@ -118,7 +128,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             if (used.add(id)) {
                 val title = "حكاية " + heroes[h] + " و" + objects[o]
                 val story = starts[a] + "، كان " + heroes[h] + " يحتفظ بـ" + objects[o] + ".\n\n" +
-                    problems[p] + " قرر ألا يكتفي بالمشاهدة. " + actions[ac] + "\n\n" + endings[e] + " " + morals[m]
+                    problems[p] + " شعر في البداية بالحيرة، لكنه تذكر أن انتظار الحل لا يغيّر شيئاً. قرر ألا يكتفي بالمشاهدة. " + actions[ac] + "\n\n" + "لم يكن الطريق سهلاً، واحتاج إلى الصبر والتعاون. ومع كل محاولة كان يكتشف أن الناس مستعدون للخير متى وجدوا من يبدأ. " + endings[e] + " " + morals[m]
                 return Pair(title, story)
             }
             attempt++
