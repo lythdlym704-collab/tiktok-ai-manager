@@ -71,6 +71,8 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         card.addView(durationText)
         card.addView(button("استمع إلى القصة") { speakStory() })
         card.addView(button("تصدير التعليق الصوتي WAV") { exportVoice() })
+        card.addView(button("إنشاء فيديو MP4 عمودي 1080p (30 ثانية)") { exportStoryVideo(false) })
+        card.addView(button("إنشاء فيديو MP4 عمودي 4K (30 ثانية)") { exportStoryVideo(true) })
         card.addView(button("إيقاف الصوت") { tts?.stop(); status.text = "تم إيقاف الصوت." })
         card.addView(button("نسخ نص القصة") { copyStory() })
         card.addView(button("حفظ المسودة") { saveDraft() })
@@ -183,6 +185,21 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         val result = tts?.synthesizeToFile(text, Bundle(), output, utteranceId)
         if (result == TextToSpeech.SUCCESS) status.text = "جارٍ إنشاء ملف التعليق الصوتي..."
         else status.text = "محرك الصوت لا يدعم تصدير الملف على هذا الجهاز."
+    }
+
+    private fun exportStoryVideo(is4k: Boolean) {
+        val story = storyText.text.toString().trim()
+        if (story.isEmpty()) { status.text = "أنشئ قصة أولاً."; return }
+        status.text = "بدأ تجهيز الفيديو. قد يستغرق التصدير وقتاً، خصوصاً بدقة 4K..."
+        StoryVideoExporter(this).export(titleText.text.toString().ifBlank { "حكاية عربية" }, story, is4k,
+            { message -> runOnUiThread { status.text = message } },
+            { file -> runOnUiThread {
+                if (file != null && file.exists() && file.length() > 0L) {
+                    status.text = "تم إنشاء فيديو MP4 صامت بنجاح: " + file.absolutePath + " • الحجم " + (file.length() / 1024) + " KB"
+                } else {
+                    status.text = "لم يكتمل إنشاء الفيديو. جرّب 1080p وتأكد من توفر مساحة كافية."
+                }
+            } })
     }
 
     private fun copyStory() {
