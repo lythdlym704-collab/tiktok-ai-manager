@@ -17,16 +17,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Configure Android SDK tools
-        run: |
-          echo "/usr/local/lib/android/sdk/cmdline-tools/16.0/bin" >> "$GITHUB_PATH"
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
-      - name: Accept Android SDK licenses
-        run: yes | /usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager --licenses
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
       - name: Install Android platform
-        run: /usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
-      - name: Build debug APK
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Build native Android APK
         run: gradle --no-daemon assembleDebug
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -39,7 +36,7 @@ jobs:
         with:
           tag_name: android-apk
           name: TikTok AI Manager Android APK
-          body: "نسخة تجريبية من تطبيق Android. ربط TikTok والنشر الرسمي يتطلبان تسجيل تطبيق مطوّر وموافقة TikTok. الصوت يعتمد على محرك Android والأصوات المثبتة."
+          body: "نسخة Android أصلية أولية. توليد القصص محلي بقوالب، والصوت من Android TTS. إنشاء فيديوهات AI وتسجيل TikTok والنشر التلقائي ليست مفعلة بعد."
           files: app/build/outputs/apk/debug/app-debug.apk
           prerelease: true
           make_latest: false
