@@ -13,7 +13,7 @@ import android.media.MediaMuxer
 import android.os.Environment
 import android.text.Layout
 import android.text.StaticLayout
-import android.text.TextDirectionHeuristics
+import android.text.TextDirectionHeuristics\nimport android.text.TextPaint
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -129,7 +129,7 @@ class StoryVideoExporter(private val context: Context) {
                           sceneNumber: Int, sceneCount: Int, frame: Int, totalFrames: Int) {
         canvas.drawColor(Color.rgb(11, 16, 34))
         val scale = width / 1080f
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(105, 126, 255); style = Paint.Style.FILL }
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(105, 126, 255); style = Paint.Style.FILL }
         canvas.drawRoundRect(RectF(54f * scale, 110f * scale, width - 54f * scale, height - 110f * scale),
             42f * scale, 42f * scale, paint)
         paint.color = Color.rgb(24, 34, 67)
@@ -159,7 +159,7 @@ class StoryVideoExporter(private val context: Context) {
             8f * scale, 8f * scale, paint)
     }
 
-    private fun drawParagraph(canvas: Canvas, value: String, paint: Paint, width: Int, top: Int, textWidth: Int, maxLines: Int) {
+    private fun drawParagraph(canvas: Canvas, value: String, paint: TextPaint, width: Int, top: Int, textWidth: Int, maxLines: Int) {
         if (value.isBlank()) return
         val layout = StaticLayout.Builder.obtain(value, 0, value.length, paint, textWidth)
             .setAlignment(Layout.Alignment.ALIGN_CENTER)
