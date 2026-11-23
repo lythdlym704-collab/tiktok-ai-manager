@@ -145,7 +145,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     private fun loadStory(title: String, story: String) {
         titleText.setText(title); storyText.setText(story)
-        val words = story.trim().split(Regex("\\\\s+")).filter { it.isNotBlank() }.size
+        val words = story.trim().split(Regex("\\s+")).filter { it.isNotBlank() }.size
         val seconds = (words * 60.0 / 125.0).toInt().coerceAtLeast(1)
         durationText.text = "عدد الكلمات: $words • المدة المتوقعة: نحو ${seconds / 60} دقيقة و${seconds % 60} ثانية"
         scenesText.text = story.split("\n\n").mapIndexed { index, part -> "المشهد " + (index + 1) + ": " + part.trim() }.joinToString("\n\n")
